@@ -1,0 +1,15 @@
+.map-container {
+    height: 100%;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    /* Ensure it stays below headers if needed */
+}
+
+.leaflet-container {
+    height: 100%;
+    width: 100%;
+    background-color: #f0f0f0;
+}

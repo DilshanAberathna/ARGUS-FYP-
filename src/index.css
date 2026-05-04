@@ -1,0 +1,35 @@
+:root {
+  --bg-color: #030514; /* Deep dark blue */
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --accent-green: #00ff84; /* Bright green from image */
+  --link-blue: #0080ff;
+  --input-bg: #ffffff;
+  --font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#root {
+  width: 100%;
+  height: 100vh;
+}
+
+/* Typography */
+h1, h2, h3 {
+  line-height: 1.2;
+}
