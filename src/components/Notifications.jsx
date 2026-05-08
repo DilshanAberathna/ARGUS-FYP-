@@ -64,7 +64,7 @@ const Notifications = ({ isOpen, onClose }) => {
                     {notifications.length === 0 ? (
                         <p style={{ color: '#e5e7eb', textAlign: 'center', margin: '2rem 0' }}>No new notifications.</p>
                     ) : (
-                        notifications.map((notif, index) => (
+                        notifications.map((notif) => (
                             <React.Fragment key={notif.id}>
                                 <div 
                                     className="notif-item" 
