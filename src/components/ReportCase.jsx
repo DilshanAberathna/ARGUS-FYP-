@@ -1,6 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bell, User as UserIcon, PlusCircle, XCircle, Play, CheckCircle } from 'lucide-react';
+import { db, storage } from '../firebaseConfig';
+import { doc, getDoc, setDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import logo from '../assets/logo.png';
 import Notifications from './Notifications';
 import UserProfileModal from './UserProfileModal';
@@ -12,7 +15,7 @@ const ReportCase = () => {
 
     const [formData, setFormData] = useState({
         caseId: '',
-        caseName: '',
+        caseType: '',
         name: '',
         nic: '',
         age: '',
@@ -24,20 +27,39 @@ const ReportCase = () => {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showProfile, setShowProfile] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     const imageInputRef = useRef(null);
     const videoInputRef = useRef(null);
+    const uploadTasksRef = useRef([]);
+
+    const handleCancelUpload = () => {
+        uploadTasksRef.current.forEach(task => task.cancel());
+        uploadTasksRef.current = [];
+        setIsUploading(false);
+    };
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        let { name, value } = e.target;
+        setFormData(prev => {
+            const updated = { ...prev };
+            if (name === 'nic') {
+                value = value.replace(/[^0-9vV]/g, '');
+                updated[name] = value;
+                const last4 = value.length >= 4 ? value.slice(-4) : value;
+                updated.caseId = `Case-${last4}`;
+            } else {
+                updated[name] = value;
+            }
+            return updated;
+        });
     };
 
     const handleImageChange = (e) => {
         if (e.target.files) {
             const selectedFiles = Array.from(e.target.files);
             const validImages = selectedFiles.filter(file => file.type.startsWith('image/'));
-            
+
             if (validImages.length !== selectedFiles.length) {
                 alert('Please select ONLY image files (e.g., .jpg, .png).');
             }
@@ -49,7 +71,7 @@ const ReportCase = () => {
         if (e.target.files) {
             const selectedFiles = Array.from(e.target.files);
             const validVideos = selectedFiles.filter(file => file.type.startsWith('video/'));
-            
+
             if (validVideos.length !== selectedFiles.length) {
                 alert('Please select ONLY video files (e.g., .mp4, .mov).');
             }
@@ -57,19 +79,81 @@ const ReportCase = () => {
         }
     };
 
-    const handleBack = () => {
-        navigate(-1);
-    };
+    const handleBack = () => navigate(-1);
+    const handleClose = () => navigate('/dashboard');
 
-    const handleClose = () => {
-        navigate('/dashboard');
+    const handleSubmit = async () => {
+        if (!formData.caseType || !formData.name || !formData.nic || !formData.age || !formData.gender) {
+            alert("Please fill in all mandatory details.");
+            return;
+        }
+
+        const nicRegex = /^([0-9]{9}[vV]|[0-9]{12})$/;
+        if (!nicRegex.test(formData.nic)) {
+            alert("Invalid NIC format");
+            return;
+        }
+
+        setIsUploading(true);
+
+        try {
+            const caseId = formData.caseId;
+
+            // Upload Images
+            const imageUrls = [];
+            for (let i = 0; i < images.length; i++) {
+                const file = images[i];
+                const fileRef = ref(storage, `cases/${caseId}/images/${file.name}`);
+                const uploadTask = uploadBytesResumable(fileRef, file);
+                uploadTasksRef.current.push(uploadTask);
+                await uploadTask;
+                const url = await getDownloadURL(fileRef);
+                imageUrls.push(url);
+            }
+
+            // Upload Videos
+            const videoUrls = [];
+            for (let i = 0; i < videos.length; i++) {
+                const file = videos[i];
+                const fileRef = ref(storage, `cases/${caseId}/videos/${file.name}`);
+                const uploadTask = uploadBytesResumable(fileRef, file);
+                uploadTasksRef.current.push(uploadTask);
+                await uploadTask;
+                const url = await getDownloadURL(fileRef);
+                videoUrls.push(url);
+            }
+
+            // Save to Firestore
+            const caseRef = doc(db, 'cases', caseId);
+
+            await setDoc(caseRef, {
+                ...formData,
+                imageUrls,
+                videoUrls,
+                status: 'Active',
+                createdAt: serverTimestamp()
+            });
+
+            // Make sure the modal knows the confirmed ID
+            setShowSuccessModal(true);
+        } catch (error) {
+            if (error.code === 'storage/canceled') {
+                console.log("Upload was cancelled by the user.");
+            } else {
+                console.error("Error uploading case:", error);
+                alert("Firebase Error: " + error.message + "\n\nPlease check your Firebase Security Rules or ensure you selected valid files.");
+            }
+        } finally {
+            setIsUploading(false);
+            uploadTasksRef.current = [];
+        }
     };
 
     const handleModalClose = () => {
         setShowSuccessModal(false);
         setFormData({
             caseId: '',
-            caseName: '',
+            caseType: '',
             name: '',
             nic: '',
             age: '',
@@ -83,7 +167,7 @@ const ReportCase = () => {
         <div className="report-page">
             <Notifications isOpen={showNotifications} onClose={() => setShowNotifications(false)} />
             <UserProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} />
-            
+
             <header className="history-header">
                 <div className="history-header-left">
                     <button className="history-back-btn" onClick={handleBack}>
@@ -97,10 +181,10 @@ const ReportCase = () => {
                         <UserIcon size={24} fill="#00ff84" />
                         <span>John Doe</span>
                     </div>
-                    <Bell 
-                        size={24} 
-                        className="notification-bell" 
-                        fill="#ff3b3b" 
+                    <Bell
+                        size={24}
+                        className="notification-bell"
+                        fill="#ff3b3b"
                         onClick={() => setShowNotifications(true)}
                         style={{ cursor: 'pointer' }}
                     />
@@ -122,11 +206,17 @@ const ReportCase = () => {
                         <div className="report-form-left">
                             <div className="form-group">
                                 <label>Case ID</label>
-                                <input type="text" name="caseId" value={formData.caseId} onChange={handleInputChange} />
+                                <input type="text" name="caseId" value={formData.caseId} readOnly style={{ backgroundColor: '#2a2d3e', color: '#00ff84', cursor: 'not-allowed' }} />
                             </div>
                             <div className="form-group">
-                                <label>Case Name</label>
-                                <input type="text" name="caseName" value={formData.caseName} onChange={handleInputChange} />
+                                <label>Case Type</label>
+                                <select name="caseType" value={formData.caseType} onChange={handleInputChange}>
+                                    <option value="" disabled>Select Case Type</option>
+                                    <option value="Missing">Missing</option>
+                                    <option value="Kidnapping">Kidnapping</option>
+                                    <option value="Abduction">Abduction</option>
+                                    <option value="Robbery">Robbery</option>
+                                </select>
                             </div>
                             <div className="form-group">
                                 <label>Name</label>
@@ -134,7 +224,7 @@ const ReportCase = () => {
                             </div>
                             <div className="form-group">
                                 <label>NIC</label>
-                                <input type="text" name="nic" value={formData.nic} onChange={handleInputChange} />
+                                <input type="text" name="nic" value={formData.nic} onChange={handleInputChange} maxLength="12" />
                             </div>
                             <div className="form-group">
                                 <label>Age</label>
@@ -142,21 +232,26 @@ const ReportCase = () => {
                             </div>
                             <div className="form-group">
                                 <label>Gender</label>
-                                <input type="text" name="gender" value={formData.gender} onChange={handleInputChange} />
+                                <select name="gender" value={formData.gender} onChange={handleInputChange}>
+                                    <option value="" disabled>Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Prefer not to say">Prefer not to say</option>
+                                </select>
                             </div>
                         </div>
 
                         <div className="report-form-right">
-                            <input 
-                                type="file" 
-                                multiple 
-                                accept="image/*" 
-                                style={{ display: 'none' }} 
-                                ref={imageInputRef} 
-                                onChange={handleImageChange} 
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                ref={imageInputRef}
+                                onChange={handleImageChange}
                             />
-                            <div 
-                                className={`upload-box ${images.length > 0 ? 'has-files' : ''}`} 
+                            <div
+                                className={`upload-box ${images.length > 0 ? 'has-files' : ''}`}
                                 onClick={() => imageInputRef.current.click()}
                             >
                                 {images.length > 0 ? (
@@ -167,16 +262,16 @@ const ReportCase = () => {
                                 <span>{images.length > 0 ? `${images.length} Image(s) Added` : 'Add Images'}</span>
                             </div>
 
-                            <input 
-                                type="file" 
-                                multiple 
-                                accept="video/*" 
-                                style={{ display: 'none' }} 
-                                ref={videoInputRef} 
-                                onChange={handleVideoChange} 
+                            <input
+                                type="file"
+                                multiple
+                                accept="video/*"
+                                style={{ display: 'none' }}
+                                ref={videoInputRef}
+                                onChange={handleVideoChange}
                             />
-                            <div 
-                                className={`upload-box ${videos.length > 0 ? 'has-files' : ''}`} 
+                            <div
+                                className={`upload-box ${videos.length > 0 ? 'has-files' : ''}`}
                                 onClick={() => videoInputRef.current.click()}
                             >
                                 {videos.length > 0 ? (
@@ -187,21 +282,32 @@ const ReportCase = () => {
                                 <span>{videos.length > 0 ? `${videos.length} Video(s) Added` : 'Add Videos'}</span>
                             </div>
 
-                            <button className="submit-btn" onClick={() => setShowSuccessModal(true)}>
-                                <Play size={32} fill="#000" color="#000" />
+                            <button className="submit-btn" onClick={handleSubmit} disabled={isUploading}>
+                                <Play size={32} fill={isUploading ? "#555" : "#000"} color={isUploading ? "#555" : "#000"} />
                             </button>
                         </div>
                     </div>
                 </div>
             </main>
 
-            {showSuccessModal && (
+            {isUploading && (
                 <div className="modal-overlay">
-                    <div className="success-modal">
+                    <div className="success-modal" style={{ textAlign: 'center' }}>
+                        <div className="spinner"></div>
+                        <h3 style={{ color: '#00ff84', marginTop: '1.5rem' }}>Uploading Data...</h3>
+                        <p style={{ marginTop: '1rem', color: '#9ca3af' }}>Please wait, securing case files...</p>
+                        <button className="cancel-upload-btn" onClick={handleCancelUpload}>Cancel Upload</button>
+                    </div>
+                </div>
+            )}
+
+            {showSuccessModal && (
+                <div className="modal-overlay" onClick={handleModalClose}>
+                    <div className="success-modal" onClick={(e) => e.stopPropagation()}>
                         <button className="modal-close-btn" onClick={handleModalClose}>
                             <XCircle size={32} fill="#ef4444" color="#484848" />
                         </button>
-                        <h3>New Case added ( Case id : {formData.caseId || '______'} )</h3>
+                        <h3>New Case added ( Case id : {formData.caseId} )</h3>
                     </div>
                 </div>
             )}

@@ -21,8 +21,8 @@ const UserProfileModal = ({ isOpen, onClose }) => {
     };
 
     return (
-        <div className="profile-overlay">
-            <div className="profile-modal">
+        <div className="profile-overlay" onClick={onClose}>
+            <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="profile-close-btn" onClick={onClose} title="Close">
                     <XCircle size={28} fill="#ef4444" color="#5a5a5a" />
                 </button>

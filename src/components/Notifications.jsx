@@ -48,8 +48,8 @@ const Notifications = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="notification-overlay">
-            <div className="notification-modal">
+        <div className="notification-overlay" onClick={onClose}>
+            <div className="notification-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="notif-close-btn" onClick={onClose} title="Close">
                     <XCircle size={26} fill="#ef4444" color="#4a4d5c" />
                 </button>
