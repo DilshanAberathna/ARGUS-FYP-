@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bell, User as UserIcon, PlusCircle, XCircle, Play, CheckCircle } from 'lucide-react';
 import { db, storage } from '../firebaseConfig';
-import { doc, getDoc, setDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import logo from '../assets/logo.png';
 import Notifications from './Notifications';
