@@ -24,13 +24,13 @@ const UserProfileModal = ({ isOpen, onClose }) => {
         <div className="profile-overlay" onClick={onClose}>
             <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="profile-close-btn" onClick={onClose} title="Close">
-                    <XCircle size={28} fill="#ef4444" color="#5a5a5a" />
+                    <XCircle size={28} fill="#FF5252" color="rgba(4,6,84,0.9)" />
                 </button>
                 
                 <div className="profile-content">
                     <div className="profile-icon-wrapper">
                         {/* Custom SVG to match the large solid user icon from screenshot perfectly */}
-                        <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg" width="180" height="180">
+                        <svg viewBox="0 0 24 24" fill="#90E0EF" xmlns="http://www.w3.org/2000/svg" width="90" height="90">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
                         </svg>
                     </div>
@@ -43,7 +43,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                     </div>
 
                     <button className="logout-btn" onClick={handleLogout}>
-                        <LogOut size={32} strokeWidth={2.5} />
+                        <LogOut size={22} strokeWidth={2.5} />
                         <span>Logout</span>
                     </button>
                 </div>

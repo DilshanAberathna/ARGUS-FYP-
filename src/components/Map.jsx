@@ -22,6 +22,7 @@ const Map = () => {
                 maxBounds={sriLankaBounds}
                 maxBoundsViscosity={1.0}
                 scrollWheelZoom={true}
+                style={{ height: '100%', width: '100%' }}
             >
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

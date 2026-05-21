@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bell, User as UserIcon, PlusCircle, XCircle, Play, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Bell, User as UserIcon, PlusCircle, XCircle, Play, CheckCircle, Trash2 } from 'lucide-react';
 import { db, storage } from '../firebaseConfig';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -77,6 +77,10 @@ const ReportCase = () => {
             }
             setVideos(validVideos);
         }
+    };
+
+    const handleRemoveImage = (index) => {
+        setImages((prev) => prev.filter((_, idx) => idx !== index));
     };
 
     const handleBack = () => navigate(-1);
@@ -192,13 +196,14 @@ const ReportCase = () => {
                 </div>
                 <div className="history-header-right">
                     <div className="user-profile" onClick={() => setShowProfile(true)} style={{ cursor: 'pointer' }}>
-                        <UserIcon size={24} fill="#00ff84" />
+                        <UserIcon size={22} fill="#CAF0F8" color="#CAF0F8" />
                         <span>John Doe</span>
                     </div>
                     <Bell
-                        size={24}
+                        size={22}
                         className="notification-bell"
-                        fill="#ff3b3b"
+                        fill="#00B4D8"
+                        color="#00B4D8"
                         onClick={() => setShowNotifications(true)}
                         style={{ cursor: 'pointer' }}
                     />
@@ -208,11 +213,11 @@ const ReportCase = () => {
             <main className="report-content">
                 <div className="report-container">
                     <button className="close-btn" onClick={handleClose}>
-                        <XCircle size={32} fill="#ef4444" color="#1a1c29" />
+                        <XCircle size={28} fill="#E53935" color="#ffffff" />
                     </button>
 
                     <div className="report-container-header">
-                        <PlusCircle size={28} color="#00ff84" />
+                        <PlusCircle size={28} color="#00B4D8" />
                         <h2>Report a New Case</h2>
                     </div>
 
@@ -220,7 +225,7 @@ const ReportCase = () => {
                         <div className="report-form-left">
                             <div className="form-group">
                                 <label>Case ID</label>
-                                <input type="text" name="caseId" value={formData.caseId} readOnly style={{ backgroundColor: '#2a2d3e', color: '#00ff84', cursor: 'not-allowed' }} />
+                                <input type="text" name="caseId" value={formData.caseId} readOnly />
                             </div>
                             <div className="form-group">
                                 <label>Case Type</label>
@@ -269,12 +274,31 @@ const ReportCase = () => {
                                 onClick={() => imageInputRef.current.click()}
                             >
                                 {images.length > 0 ? (
-                                    <CheckCircle size={48} color="#00ff84" strokeWidth={2} />
+                                    <CheckCircle size={48} color="#00B4D8" strokeWidth={2} />
                                 ) : (
-                                    <PlusCircle size={48} color="#000" strokeWidth={2} />
+                                    <PlusCircle size={48} color="#90E0EF" strokeWidth={2} />
                                 )}
                                 <span>{images.length > 0 ? `${images.length} Image(s) Added` : 'Add Images'}</span>
                             </div>
+
+                            {images.length > 0 && (
+                                <div className="selected-images">
+                                    <div className="selected-images-header">Selected Images</div>
+                                    {images.map((image, index) => (
+                                        <div key={image.name + index} className="selected-image-item">
+                                            <span className="selected-image-name">{image.name}</span>
+                                            <button
+                                                type="button"
+                                                className="selected-image-remove"
+                                                onClick={() => handleRemoveImage(index)}
+                                                aria-label={`Remove ${image.name}`}
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
 
                             <input
                                 type="file"
@@ -289,15 +313,15 @@ const ReportCase = () => {
                                 onClick={() => videoInputRef.current.click()}
                             >
                                 {videos.length > 0 ? (
-                                    <CheckCircle size={48} color="#00ff84" strokeWidth={2} />
+                                    <CheckCircle size={48} color="#00B4D8" strokeWidth={2} />
                                 ) : (
-                                    <PlusCircle size={48} color="#000" strokeWidth={2} />
+                                    <PlusCircle size={48} color="#90E0EF" strokeWidth={2} />
                                 )}
                                 <span>{videos.length > 0 ? `${videos.length} Video(s) Added` : 'Add Videos'}</span>
                             </div>
 
                             <button className="submit-btn" onClick={handleSubmit} disabled={isUploading}>
-                                <Play size={32} fill={isUploading ? "#555" : "#000"} color={isUploading ? "#555" : "#000"} />
+                                <Play size={32} fill={isUploading ? "#555" : "#fff"} color={isUploading ? "#555" : "#fff"} />
                             </button>
                         </div>
                     </div>
@@ -308,8 +332,8 @@ const ReportCase = () => {
                 <div className="modal-overlay">
                     <div className="success-modal" style={{ textAlign: 'center' }}>
                         <div className="spinner"></div>
-                        <h3 style={{ color: '#00ff84', marginTop: '1.5rem' }}>Uploading Data...</h3>
-                        <p style={{ marginTop: '1rem', color: '#9ca3af' }}>Please wait, securing case files...</p>
+                        <h3 style={{ color: 'var(--ice)', marginTop: '1.5rem' }}>Uploading Data...</h3>
+                        <p style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>Please wait, securing case files...</p>
                         <button className="cancel-upload-btn" onClick={handleCancelUpload}>Cancel Upload</button>
                     </div>
                 </div>
@@ -319,7 +343,7 @@ const ReportCase = () => {
                 <div className="modal-overlay" onClick={handleModalClose}>
                     <div className="success-modal" onClick={(e) => e.stopPropagation()}>
                         <button className="modal-close-btn" onClick={handleModalClose}>
-                            <XCircle size={32} fill="#ef4444" color="#484848" />
+                            <XCircle size={28} fill="#E53935" color="#ffffff" />
                         </button>
                         <h3>New Case added ( Case id : {formData.caseId} )</h3>
                     </div>

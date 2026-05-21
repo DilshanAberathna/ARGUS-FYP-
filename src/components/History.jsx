@@ -93,13 +93,14 @@ const History = () => {
                 </div>
                 <div className="history-header-right">
                     <div className="user-profile" onClick={() => setShowProfile(true)} style={{ cursor: 'pointer' }}>
-                        <UserIcon size={24} fill="#00ff84" />
+                        <UserIcon size={22} fill="#CAF0F8" color="#CAF0F8" />
                         <span>John Doe</span>
                     </div>
                     <Bell 
-                        size={24} 
+                        size={22} 
                         className="notification-bell" 
-                        fill="#ff3b3b" 
+                        fill="#00B4D8" 
+                        color="#00B4D8"
                         onClick={() => setShowNotifications(true)}
                         style={{ cursor: 'pointer' }}
                     />
@@ -148,11 +149,11 @@ const History = () => {
             <main className="history-content">
                 <div className="history-container">
                     <button className="history-close-btn" onClick={handleClose}>
-                        <XCircle size={32} fill="#ef4444" color="#1a1c29" />
+                        <XCircle size={28} fill="#E53935" color="#ffffff" />
                     </button>
                     
                     <div className="history-container-header">
-                        <RotateCcw size={28} color="#00ff84" />
+                        <RotateCcw size={24} color="#0077B6" />
                         <h2>History</h2>
                     </div>
                     

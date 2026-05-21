@@ -62,13 +62,14 @@ const Dashboard = () => {
                 </div>
                 <div className="header-right">
                     <div className="user-profile" onClick={() => setShowProfile(true)} style={{ cursor: 'pointer' }}>
-                        <User size={24} fill="#00ff84" color="#00ff84" />
+                        <User size={22} fill="#90E0EF" color="#90E0EF" />
                         <span>John Doe</span>
                     </div>
                     <Bell 
-                        size={24} 
+                        size={22} 
                         className="notification-bell" 
-                        fill="#ff3b3b" 
+                        fill="#00B4D8" 
+                        color="#00B4D8"
                         onClick={() => setShowNotifications(true)} 
                         style={{ cursor: 'pointer' }}
                     />

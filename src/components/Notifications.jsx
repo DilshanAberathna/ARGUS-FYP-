@@ -51,18 +51,18 @@ const Notifications = ({ isOpen, onClose }) => {
         <div className="notification-overlay" onClick={onClose}>
             <div className="notification-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="notif-close-btn" onClick={onClose} title="Close">
-                    <XCircle size={26} fill="#ef4444" color="#4a4d5c" />
+                    <XCircle size={26} fill="#FF5252" color="rgba(4,6,84,0.9)" />
                 </button>
                 <div className="notif-header">
                     <h2>Notifications</h2>
                     <div className="notif-header-actions">
-                        <Trash2 size={24} color="#fff" style={{ cursor: 'pointer' }} onClick={handleClearNotifications} title="Clear all" />
+                        <Trash2 size={22} color="#90E0EF" style={{ cursor: 'pointer' }} onClick={handleClearNotifications} title="Clear all" />
                     </div>
                 </div>
                 
                 <div className="notif-list">
                     {notifications.length === 0 ? (
-                        <p style={{ color: '#e5e7eb', textAlign: 'center', margin: '2rem 0' }}>No new notifications.</p>
+                        <p className="notif-empty">No new notifications.</p>
                     ) : (
                         notifications.map((notif) => (
                             <React.Fragment key={notif.id}>

@@ -1,15 +1,52 @@
+/* ============================================================
+   ARGUS — Map Component  (Dark Theme)
+   ============================================================ */
+
 .map-container {
-    height: 100%;
     width: 100%;
-    border-radius: 12px;
+    height: 100%;
+    border-radius: inherit;
     overflow: hidden;
-    position: relative;
-    z-index: 1;
-    /* Ensure it stays below headers if needed */
 }
 
+/* Required: Leaflet container must have explicit height */
 .leaflet-container {
-    height: 100%;
-    width: 100%;
-    background-color: #f0f0f0;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* ── Zoom Controls ── */
+.leaflet-control-zoom {
+    border: 1px solid rgba(0,180,216,0.22) !important;
+    border-radius: var(--radius-sm) !important;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.50) !important;
+}
+
+.leaflet-control-zoom a {
+    background: rgba(7,12,58,0.92) !important;
+    border-color: rgba(0,180,216,0.18) !important;
+    color: #90E0EF !important;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 26px !important;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.leaflet-control-zoom a:hover {
+    background: rgba(0,119,182,0.70) !important;
+    color: #CAF0F8 !important;
+}
+
+/* ── Attribution ── */
+.leaflet-control-attribution {
+    background: rgba(7,12,58,0.80) !important;
+    color: rgba(144,224,239,0.55) !important;
+    font-size: 0.68rem;
+    border-top-left-radius: 6px !important;
+    backdrop-filter: blur(4px);
+}
+
+.leaflet-control-attribution a {
+    color: #00B4D8 !important;
 }
